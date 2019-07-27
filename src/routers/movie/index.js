@@ -1,0 +1,26 @@
+export default {
+    path:'/movie',
+    component:()=>import('@/views/Movie'),
+    children:[
+        {
+            path:'city',
+            component:()=>import('@/components/City')
+        },
+        {
+            path:'coming',
+            component:()=>import('@/components/Coming')
+        },
+        {
+            path:'playing',
+            component:()=>import('@/components/Playing')
+        },
+        {
+            path:'serch',
+            component:()=>import('@/components/Serch')
+        },
+       {
+           path:'/movie',
+           redirect:'/movie/playing'
+       }
+    ]
+}
