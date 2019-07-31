@@ -1,5 +1,7 @@
 <template>
   <div class="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
     <!-- <ul>
       <li>
         <div class="pic_show">
@@ -19,11 +21,11 @@
     </ul> -->
     <ul>
       <li v-for="item in movieList" :key="item.id">
-        <div class="pic_show">
+        <div class="pic_show" @tap="handleToDetail(item.id)">
           <img :src="item.img | setWH('/128.180/')" />
         </div>
         <div class="info_list">
-          <h2>{{ item.nm }}</h2>
+          <h2 @tap="handleToDetail(item.id)">{{ item.nm }}</h2>
           <p>
             观众评
             <span class="grade">{{ item.sc }}</span>
@@ -34,6 +36,7 @@
         <div class="btn_mall">购票</div>
       </li>
     </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -42,15 +45,28 @@ export default {
   name: "playing",
   data(){
     return{
-      movieList:[]
+      movieList:[],
+      isLoading:true,
+      preCity: -1
     }
   },
-  created(){
-    this.$axios.get('/api/movieOnInfoList?cityId=10').then((res)=>{
+  activated(){
+    let cityId = this.$store.state.cityl.id
+    if(this.preCity === cityId){return }
+    this.isLoading = true
+    //console.log(111)
+    this.$axios.get('/api/movieOnInfoList?cityId='+cityId).then((res)=>{
       if(res.data.msg === 'ok'){
         this.movieList = res.data.data.movieList
+        this.isLoading = false
+        this.preCity = cityId
       }
     })
+  },
+  methods:{
+    handleToDetail(movieId){
+      this.$router.push('/movie/detail/1/' + movieId)
+    }
   }
 };
 </script>

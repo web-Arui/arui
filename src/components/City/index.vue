@@ -1,27 +1,32 @@
 <template>
   <div class="city_body">
     <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="item in hotList" :key="item.id">{{ item.nm }}</li>
-        </ul>
-      </div>
-    </div>
-    <div class="city_sort" ref="city_sort">
-      <div v-for="item in citiesList" :key="item.index">
-        <h2>{{item.index}}</h2>
-        <ul>
-          <li v-for="itemList in item.list" :key="itemList.id">{{itemList.nm}}</li>
-        </ul>
-      </div>
+      <Loading v-if="isLoading" />
+      <Scroller v-else ref="city_list">
+        <div>
+          <div class="city_hot">
+            <h2>热门城市</h2>
+            <ul class="clearfix">
+              <li v-for="item in hotList" :key="item.id" @tap="handleToCity(item.nm,item.id)">{{ item.nm }}</li>
+            </ul>
+          </div>
+          <div class="city_sort" ref="city_sort">
+            <div v-for="item in citiesList" :key="item.index">
+              <h2>{{item.index}}</h2>
+              <ul>
+                <li v-for="itemList in item.list" :key="itemList.id" @tap="handleToCity(itemList.nm,itemList.id)">{{itemList.nm}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </Scroller>
     </div>
     <div class="city_index">
       <ul>
         <li
           v-for="(item,index) in citiesList"
           :key="item.id"
-          @click="hotListIndex(index)"
+          @touchstart="hotListIndex(index)"
         >{{item.index}}</li>
       </ul>
     </div>
@@ -34,11 +39,19 @@ export default {
   data() {
     return {
       citiesList: [],
-      hotList: []
+      hotList: [],
+      isLoading:true
     };
   },
   created() {
-    this.$axios
+    let citiesList = window.localStorage.getItem('citiesList')
+    let hotList = window.localStorage.getItem('hotList')
+    if(citiesList && hotList){
+      this.citiesList = JSON.parse(citiesList)
+      this.hotList = JSON.parse(hotList)
+      this.isLoading = false
+    }else{
+      this.$axios
       .get("/api/cityList")
       .then(res => {
         // console.log(res.data.data)
@@ -47,9 +60,15 @@ export default {
           let { citiesList, hotList } = this.cityList(cities);
           this.citiesList = citiesList;
           this.hotList = hotList;
+          this.isLoading = false
+          //console.log(this.citiesList);
+          window.localStorage.setItem('citiesList',JSON.stringify(citiesList))
+          window.localStorage.setItem('hotList',JSON.stringify(hotList))
         }
       })
       .catch(err => console.log(err));
+    }
+    
   },
   methods: {
     cityList(cities) {
@@ -99,7 +118,14 @@ export default {
     },
     hotListIndex(index) {
       var hw = this.$refs.city_sort.getElementsByTagName("h2");
-	  this.$refs.city_sort.parentNode.scrollTop = hw[index].offsetTop;
+      // this.$refs.city_sort.parentNode.scrollTop = hw[index].offsetTop;
+      this.$refs.city_list.toScrollTop(-hw[index].offsetTop)
+    },
+    handleToCity(nm,id){
+      this.$store.commit('cityl/CITY_INFO',{nm,id})
+      window.localStorage.setItem('nm',nm)
+      window.localStorage.setItem('id',id)
+      this.$router.push('/movie/playing')
     }
   }
 };

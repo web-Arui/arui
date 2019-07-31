@@ -18,6 +18,26 @@ export default {
             path:'serch',
             component:()=>import('@/components/Serch')
         },
+        {
+            path:'detail/1/:movieId',
+            components:{
+                default:()=>import('@/components/Playing'),
+                detail:()=>import('@/views/Movie/detail')
+            },
+            props:{
+                detail:true
+            }
+        },
+        {
+            path:'detail/2/:movieId',
+            components:{
+                default:()=>import('@/components/Coming'),
+                detail:()=>import('@/views/Movie/detail')
+            },
+            props:{
+                detail:true
+            }
+        },
        {
            path:'/movie',
            redirect:'/movie/playing'

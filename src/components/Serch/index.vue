@@ -45,15 +45,16 @@ export default {
 	watch:{
 		message(newVal){
 			var that = this
+			let cityId = this.$store.state.cityl.id
 			this.cancelRequest()
-			this.$axios.get('/api/searchList?cityId=10&kw='+newVal,{
+			this.$axios.get('/api/searchList?cityId='+cityId+'&kw='+newVal,{
 				cancelToken: new this.$axios.CancelToken(function executor(c) {
           			that.source = c;
         		})
 			}).then((res)=>{
 				if(res.data.data.movies){
 					this.movies = res.data.data.movies.list
-				console.log(this.movies)
+				//console.log(this.movies)
 				}
 			}).catch((err) => {
         		if (this.$axios.isCancel(err)) {

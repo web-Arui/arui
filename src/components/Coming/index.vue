@@ -1,5 +1,7 @@
 <template>
   <div class="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller v-else :handleToScroll='handleToScroll' :handleTouchEnd='handleTouchEnd'>
     <ul>
       <!-- <li>
         <div class="pic_show">
@@ -15,12 +17,13 @@
         </div>
         <div class="btn_pre">预售</div>
       </li> -->
+      <li class="pullDownMsg">{{pullDownMsg}}</li>
       <li v-for="item in comingList" :key="item.id">
-        <div class="pic_show">
+        <div class="pic_show" @tap="headleToDetail(item.id)">
           <img :src="item.img | setWH('/128.180/')" />
         </div>
         <div class="info_list">
-          <h2>{{ item.nm }}</h2>
+          <h2 @tap="headleToDetail(item.id)">{{ item.nm }}</h2>
           <p>
             <span class="person">{{item.wish}}</span> 人想看
           </p>
@@ -30,23 +33,83 @@
         <div class="btn_pre">预售</div>
       </li>
     </ul>
+    </Scroller>
   </div>
 </template>
 
 <script>
+// import BScorll from 'better-scroll'
 export default {
     name:'coming',
     data(){
       return{
-        comingList:[]
+        comingList:[],
+        pullDownMsg:'',
+        isLoading:true,
+        preCity:-1
       }
     },
-    created(){
-      this.$axios.get('/api/movieComingList?cityId=10').then((res)=>{
+    activated(){
+      let cityId = this.$store.state.cityl.id
+      if(this.preCity === cityId){return }
+      this.isLoading = true
+      //console.log(11)
+      this.$axios.get('/api/movieComingList?cityId='+cityId).then((res)=>{
         if(res.data.msg === 'ok'){
           this.comingList = res.data.data.comingList
+          this.isLoading = false
+          this.preCity = cityId
+          // this.$nextTick(()=>{
+          //   var scroll = new BScorll(this.$refs.movie_body,{
+          //     tap:true,
+          //     probeType: 1
+          //   })
+          //   scroll.on('scroll',(pos)=>{
+          //     if(pos.y>30){
+          //       this.pullDownMsg = '正在加载中'
+          //     }
+          //   })
+          //   scroll.on('touchEnd',(pos)=>{
+          //     if(pos.y>30){
+          //        this.$axios.get('/api/movieComingList?cityId=10').then((res)=>{
+          //           if(res.data.msg === 'ok'){
+          //             this.pullDownMsg = "加载成功"
+          //             setTimeout(()=>{
+          //               this.comingList = res.data.data.comingList
+          //               this.pullDownMsg = ''
+          //             },1000)
+                        
+          //               }
+          //         })
+          //     }
+          //   })
+          // })
         }
       })
+    },
+    methods:{
+      headleToDetail(movieId){
+        this.$router.push('/movie/detail/2/' + movieId)
+      },
+      handleToScroll(pos){
+        if(pos.y>30){
+                this.pullDownMsg = '正在加载中'
+              }
+      },
+      handleTouchEnd(pos){
+        if(pos.y>30){
+                 this.$axios.get('/api/movieComingList?cityId=10').then((res)=>{
+                    if(res.data.msg === 'ok'){
+                      this.pullDownMsg = "加载成功"
+                      setTimeout(()=>{
+                        this.comingList = res.data.data.comingList
+                        this.pullDownMsg = ''
+                      },1000)
+                        
+                        }
+                  })
+        }
+      }
     }
 };
 </script>
@@ -121,5 +184,10 @@ export default {
 }
 .movie_body .btn_pre {
   background-color: #3c9fe6;
+}
+.movie_body .pullDownMsg{
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 </style>
